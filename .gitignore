@@ -9,6 +9,7 @@ exo_fastapi.py
 output.wav
 test_kokoro.py
 backend/.env
+.vscode
 # Virtual environments
 .venv
 
