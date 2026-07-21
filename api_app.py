@@ -2,6 +2,7 @@
 import io
 import logging
 import os
+import uuid
 import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
@@ -11,11 +12,12 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 # 'a' = American English. Other codes: 'b' British, 'e' Spanish,
-# 'f' French, 'h' Hindi, 'i' Italian, 'j' Japanese,
-# 'p' Brazilian Portuguese, 'z' Mandarin Chinese.
+# 'f' French, 'h' Hindi, 'i' Italian,
+# 'p' Brazilian Portuguese.
 
 MAX_TEXT_LENGTH = 500
-OUTPUT_DIR = "/tmp"
+OUTPUT_DIR = "/tmp/tts_outputs"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -23,12 +25,11 @@ logger = logging.getLogger("tts_api")
 
 api = FastAPI(title="TTS_API")
 
-# Allow CORS for local development
-# Cross-Origin Resource Sharing (CORS) is an HTTP-header based mechanism that allows a server to indicate 
-# any origins (domain, scheme, or port) other than its own from which a browser should permit loading resources
+# Allow CORS configuration from environment for local development and deployment
+frontend_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[origin.strip() for origin in frontend_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,6 +51,7 @@ class APIResponse(BaseModel):
 async def bienvenue():
     return APIResponse(success=True, message="TTS API is running.", data={"status": "ok"})
 
+
 code_to_languages = {
     "a": "American English",
     "b": "British",
@@ -60,28 +62,17 @@ code_to_languages = {
     "p": "Brazilian Portuguese",
 }
 
-voices = {"a": "af_bella",
-          "b": "bf_emma",
-          "f": "ff_siwis", 
-          "e": "ef_dora", 
-          "h": "hf_alpha", 
-          "i": "if_sara", 
-          "p": "pf_dora", 
-         }
-
 @api.get("/tts/languages_available")
 async def get_available_languages():
     return APIResponse(success=True, message="Languages retrieved successfully.", data=code_to_languages)
 
-
 pipelines = {}
 
-# Function to get or create a KPipeline instance for a given language
 def get_pipeline(language: str):
     if language not in pipelines:
-        logger.info("Initializing Kokoro pipeline for language %s", language)
+        logger.info("Creating pipeline for language %s", language)
         pipelines[language] = KPipeline(lang_code=language)
-    return pipelines[language]
+        return pipelines[language]
 
 
 @api.post("/tts", response_model=APIResponse)
@@ -103,6 +94,14 @@ async def synthesize_text(payload: TTSRequest):
     try:
         pipeline = get_pipeline(language)
         audio_chunks = []
+        voices = {"a": "af_bella",
+          "b": "bf_emma",
+          "f": "ff_siwis", 
+          "e": "ef_dora", 
+          "h": "hf_alpha", 
+          "i": "if_sara", 
+          "p": "pf_dora", 
+         }
         for _, _, chunk in pipeline(text, voice=voices.get(language), speed=0.8):
             audio_chunks.append(chunk)
 
@@ -114,7 +113,7 @@ async def synthesize_text(payload: TTSRequest):
         wav_buffer = io.BytesIO()
         sf.write(wav_buffer, audio, 24000, format="WAV")
         wav_bytes = wav_buffer.getvalue()
-
+        voice = voices.get(language)
         output_path = os.path.join(OUTPUT_DIR, f"{language}_speech.wav")
         with open(output_path, "wb") as output_file:
             output_file.write(wav_bytes)
