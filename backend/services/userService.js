@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { query } from './db.js'
 
 export const getUserByEmail = async (email) => {
