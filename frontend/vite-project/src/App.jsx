@@ -15,7 +15,7 @@ export default function App() {
     event.preventDefault()
 
     if (!text.trim()) {
-      setStatus('Veuillez saisir un texte avant de convertir.')
+      setStatus('Veuillez saisir un texte à convertir.')
       return
     }
 
