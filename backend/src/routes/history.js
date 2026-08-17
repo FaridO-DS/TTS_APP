@@ -1,6 +1,6 @@
 import express from 'express'
 import { authenticate } from '../middleware/auth.js'
-import { getHistoryForUser, createGenerationHistory } from '../services/historyService.js'
+import { getHistoryForUser, createGenerationHistory } from '../../lib/historyService.js'
 import { successResponse, errorResponse } from '../utils/response.js'
 
 const router = express.Router()
