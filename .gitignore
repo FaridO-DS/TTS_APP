@@ -12,4 +12,6 @@ backend/.env
 .vscode
 # Virtual environments
 .venv
+.env
+
 

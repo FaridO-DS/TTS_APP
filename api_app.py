@@ -16,7 +16,7 @@ from pydantic import BaseModel
 # 'p' Brazilian Portuguese.
 
 MAX_TEXT_LENGTH = 500
-OUTPUT_DIR = "/tmp/tts_outputs"
+OUTPUT_DIR = "./audio_store"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Set up logging
@@ -62,18 +62,13 @@ code_to_languages = {
     "p": "Brazilian Portuguese",
 }
 
-@api.get("/tts/languages_available")
-async def get_available_languages():
-    return APIResponse(success=True, message="Languages retrieved successfully.", data=code_to_languages)
-
 pipelines = {}
-
+os.environ["HF_TOKEN"] = "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"
 def get_pipeline(language: str):
     if language not in pipelines:
         logger.info("Creating pipeline for language %s", language)
-        pipelines[language] = KPipeline(lang_code=language)
+        pipelines[language] = KPipeline(lang_code=language,repo_id="hexgrad/Kokoro-82M")
         return pipelines[language]
-
 
 @api.post("/tts", response_model=APIResponse)
 async def synthesize_text(payload: TTSRequest):
@@ -113,7 +108,6 @@ async def synthesize_text(payload: TTSRequest):
         wav_buffer = io.BytesIO()
         sf.write(wav_buffer, audio, 24000, format="WAV")
         wav_bytes = wav_buffer.getvalue()
-        voice = voices.get(language)
         output_path = os.path.join(OUTPUT_DIR, f"{language}_speech.wav")
         with open(output_path, "wb") as output_file:
             output_file.write(wav_bytes)
@@ -136,7 +130,7 @@ async def synthesize_text(payload: TTSRequest):
 
 
 @api.get("/audio_file")
-async def get_audio_file(file: str = "speech.wav"):
+async def get_audio_file(file: str):
     file_path = os.path.join(OUTPUT_DIR, file)
     if not os.path.exists(file_path):
         logger.warning("Audio file not found: %s", file)
