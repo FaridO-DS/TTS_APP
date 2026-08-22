@@ -52,7 +52,9 @@ export const signup = async (req, res) => {
       });
 
       try {
+         if (typeof sendWelcomeEmail === "function") {
         await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+         }
       } catch (error) {
         console.error("Failed to send welcome email:", error);
       }
@@ -95,7 +97,11 @@ if (!email || !password) {
 };
 
 export const logout = async (_, res) => {
-    res.clearCookie("token");
+    res.clearCookie("token", {
+      httpOnly:true,
+      secure:ENV.NODE_ENV==="production",
+      sameSite:"strict",
+    });
     res.status(200).json({ message: "Logged out successfully" });
   };
   

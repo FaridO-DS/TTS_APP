@@ -8,7 +8,10 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
+    "@arcjet/inspect": "^1.5.0",
+    "@arcjet/node": "^1.5.0",
     "arcjet": "^1.9.1",
+    "axios": "^1.19.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -17,7 +20,8 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^8.10.1",
     "pg": "^8.11.0",
-    "stripe": "^12.18.0"
+    "stripe": "^12.18.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

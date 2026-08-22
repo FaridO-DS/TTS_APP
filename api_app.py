@@ -8,12 +8,8 @@ import soundfile as sf
 from kokoro import KPipeline
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
-
-# 'a' = American English. Other codes: 'b' British, 'e' Spanish,
-# 'f' French, 'h' Hindi, 'i' Italian,
-# 'p' Brazilian Portuguese.
 
 MAX_TEXT_LENGTH = 500
 OUTPUT_DIR = "./audio_store"
@@ -38,58 +34,19 @@ api.add_middleware(
 # Define request and response models using Pydantic
 class TTSRequest(BaseModel):
     text: str
-    language: str = "a"  # Default to American English if not specified
+    language: str 
 
-class APIResponse(BaseModel):
-    success: bool
-    message: str
-    data: dict | None = None
-    error: str | None = None
-
-
-@api.get("/")
-async def bienvenue():
-    return APIResponse(success=True, message="TTS API is running.", data={"status": "ok"})
-
-
-code_to_languages = {
-    "a": "American English",
-    "b": "British",
-    "e": "Spanish",
-    "f": "French",
-    "h": "Hindi",
-    "i": "Italian",
-    "p": "Brazilian Portuguese",
+codes = {
+     "a":"American English",
+     "b":"British",
+     "e":"Spanish",
+     "f":"French",
+     "h":"Hindi",
+     "i":"Italian",
+     "p":"Brazilian Portuguese",
 }
 
-pipelines = {}
-os.environ["HF_TOKEN"] = "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"
-def get_pipeline(language: str):
-    if language not in pipelines:
-        logger.info("Creating pipeline for language %s", language)
-        pipelines[language] = KPipeline(lang_code=language,repo_id="hexgrad/Kokoro-82M")
-        return pipelines[language]
-
-@api.post("/tts", response_model=APIResponse)
-async def synthesize_text(payload: TTSRequest):
-    logger.info("Received TTS request for language=%s", payload.language)
-    text = payload.text.strip()
-    language = (payload.language or "a").strip().lower()
-
-    if not text:
-        logger.warning("Empty text received")
-        raise HTTPException(status_code=400, detail="No text provided for TTS conversion.")
-    if len(text) > MAX_TEXT_LENGTH:
-        logger.warning("Text too long: %s characters", len(text))
-        raise HTTPException(status_code=400, detail=f"Text is too long. Maximum length is {MAX_TEXT_LENGTH} characters.")
-    if language not in code_to_languages:
-        logger.warning("Unsupported language code: %s", language)
-        raise HTTPException(status_code=400, detail="Unsupported language code.")
-
-    try:
-        pipeline = get_pipeline(language)
-        audio_chunks = []
-        voices = {"a": "af_bella",
+voices = {"a": "af_bella",
           "b": "bf_emma",
           "f": "ff_siwis", 
           "e": "ef_dora", 
@@ -97,35 +54,58 @@ async def synthesize_text(payload: TTSRequest):
           "i": "if_sara", 
           "p": "pf_dora", 
          }
-        for _, _, chunk in pipeline(text, voice=voices.get(language), speed=0.8):
-            audio_chunks.append(chunk)
+
+pipelines = {}
+os.environ["HF_TOKEN"] = "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"
+
+def get_pipeline(language: str):
+    if language not in pipelines:
+        logger.info("Creating pipeline for language = %s", codes.get(language))
+        pipelines[language] = KPipeline(lang_code=language,repo_id="hexgrad/Kokoro-82M")
+    return pipelines[language]
+
+@api.get("/")
+async def Bienvenue():
+    return {"success": True, "message" : "TTS API is running.", "status": "ok"}
+
+@api.post("/tts")
+async def synthesize_text(payload: TTSRequest):
+    logger.info("Received TTS request for language code = %s", payload.language)
+    text = payload.text.strip()
+    language = (payload.language or "a").strip().lower()
+
+    if not text:
+        raise HTTPException(status_code=400, detail="No text provided for TTS conversion.")
+    if len(text) > MAX_TEXT_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Text is too long. Maximum length is {MAX_TEXT_LENGTH} characters.")
+    if language not in codes:
+        logger.warning("Unsupported language code: %s", language)
+        raise HTTPException(status_code=400, detail="Unsupported language code.")
+
+    try:
+        pipeline = get_pipeline(language)
+        voice = voices.get(language)
+        
+        audio_chunks = [chunk for _, _, chunk in pipeline(text, voice, speed=0.8)]
 
         if not audio_chunks:
-            logger.error("Kokoro returned no audio chunks for language=%s", language)
+            logger.error("Kokoro returned no audio chunks for language = %s", codes.get(language))
             raise HTTPException(status_code=500, detail="No audio generated.")
 
         audio = np.concatenate(audio_chunks)
+
         wav_buffer = io.BytesIO()
         sf.write(wav_buffer, audio, 24000, format="WAV")
-        wav_bytes = wav_buffer.getvalue()
-        output_path = os.path.join(OUTPUT_DIR, f"{language}_speech.wav")
-        with open(output_path, "wb") as output_file:
-            output_file.write(wav_bytes)
+        wav_buffer.seek(0)
+        
+        logger.info("Audio generated successfully for language = %s", codes.get(language))
 
-        logger.info("Audio generated successfully for language=%s", language)
-        return APIResponse(
-            success=True,
-            message="Audio generated successfully.",
-            data={
-                "download_url": f"/audio_file?file={language}_speech.wav",
-                "filename": f"{language}_speech.wav",
-                "language": language,
-            },
-        )
+        return StreamingResponse(wav_buffer, media_type="audio/wav")
+    
     except HTTPException:
         raise
     except Exception as exc:
-        logger.exception("Failed to synthesize audio for language=%s", language)
+        logger.exception("Failed to synthesize audio for language = %s", codes.get(language))
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 

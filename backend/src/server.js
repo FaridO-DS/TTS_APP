@@ -1,43 +1,36 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import authRoutes from './routes/auth.js'
-import userRoutes from './routes/users.js'
-import stripeRoutes from './routes/stripe.js'
-import historyRoutes from './routes/history.js'
+import express from 'express';
+import cookieParser from "cookie-parser";
+import path from "path";
+import cors from 'cors';
 
-dotenv.config()
+import authRoutes from './routes/auth.route.js'
+import ttsRoutes from './routes/tts.route.js'
 
+import { ENV } from './lib/env.js';
+import { connectDB } from './lib/db.js';
+
+const __dirname = path.resolve();
 const app = express()
-const allowedOrigins = [process.env.FRONTEND_ORIGIN || 'http://localhost:5173']
-app.use(cors({ origin: allowedOrigins, credentials: true }))
-app.use(express.json())
+const PORT = ENV.PORT || 3000;
+
+app.use(express.json({ limit: "4mb" })); // req.body
+app.use(cors({origin: ENV.CLIENT_URL, credentials: true})); // req.headers
+app.use(cookieParser()); // req.cookies
 
 app.use('/auth', authRoutes)
-app.use('/users', userRoutes)
-app.use('/stripe', stripeRoutes)
-app.use('/history', historyRoutes)
+app.use('/api/tts', ttsRoutes)
 
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Backend service is running.',
-    data: {
-      version: '0.1.0',
-      availableRoutes: [
-        '/auth/register',
-        '/auth/login',
-        '/users/me',
-        '/stripe/create-customer',
-        '/stripe/create-checkout-session',
-        '/history',
-      ],
-    },
-    error: null,
-  })
+// Make ready for deployment
+if (ENV.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "../frontend/dist")));
+    app.get("*", (_, res) => {
+        res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+    });
+}
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`)
+    connectDB();
 })
 
-const port = process.env.PORT || 4000
-app.listen(port, () => {
-  console.log(`Backend API listening on http://localhost:${port}`)
-})
+
