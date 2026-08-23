@@ -2,7 +2,7 @@
 import io
 import logging
 import os
-import uuid
+from dotenv import load_dotenv
 import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
+load_dotenv()
 MAX_TEXT_LENGTH = 500
 OUTPUT_DIR = "./audio_store"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -56,7 +57,13 @@ voices = {"a": "af_bella",
          }
 
 pipelines = {}
-os.environ["HF_TOKEN"] = "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"
+
+hf_token = os.getenv("HF_TOKEN")
+if not hf_token:
+    logger.error("Le jeton HF_TOKEN est manquant dans le fichier .env !")
+    # Optionnel : vous pouvez mettre une valeur par défaut ou lever une erreur claire
+else:
+    os.environ["HF_TOKEN"] = hf_token
 
 def get_pipeline(language: str):
     if language not in pipelines:
@@ -95,12 +102,12 @@ async def synthesize_text(payload: TTSRequest):
         audio = np.concatenate(audio_chunks)
 
         wav_buffer = io.BytesIO()
-        sf.write(wav_buffer, audio, 24000, format="WAV")
+        sf.write(wav_buffer, audio, 24000, format="mp3")
         wav_buffer.seek(0)
         
         logger.info("Audio generated successfully for language = %s", codes.get(language))
 
-        return StreamingResponse(wav_buffer, media_type="audio/wav")
+        return StreamingResponse(wav_buffer, media_type="audio/mpeg")
     
     except HTTPException:
         raise
@@ -115,6 +122,6 @@ async def get_audio_file(file: str):
     if not os.path.exists(file_path):
         logger.warning("Audio file not found: %s", file)
         raise HTTPException(status_code=404, detail="Audio file not found.")
-    return FileResponse(file_path, media_type="audio/wav", filename=file)
+    return FileResponse(file_path, media_type="audio/mp3", filename=file)
 
 

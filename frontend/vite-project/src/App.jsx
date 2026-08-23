@@ -6,9 +6,10 @@ import { Toaster } from "react-hot-toast";
 
 // Composants
 import Form from "./components/Form";
-import HistoryList from "./components/HistoryList"; 
+import TtsHistoryList from "./components/ttsHistoryList"; 
 import Login from "./pages/LoginPage"; 
 import Signup from "./pages/SignupPage"; 
+import AudioPlayer from "./components/audioPlayer"; // 👈 Votre nouveau lecteur stylisé
 import "./index.css";
 
 export default function App() {
@@ -63,7 +64,9 @@ export default function App() {
           path="/"
           element={
             authUser ? (
-              <div className="w-full max-w-5xl mx-auto px-4 py-8 flex flex-col flex-grow">
+              <div className="w-full max-w-5xl mx-auto px-4 py-8 flex flex-col flex-grow mb-24"> 
+                {/* 💡 Note : Ajout d'une marge basse 'mb-24' pour que la barre de lecture flottante ne cache pas le bas de l'historique */}
+                
                 {/* BARRE DE NAVIGATION / EN-TÊTE ACCUEIL */}
                 <header className="flex flex-col sm:flex-row items-center justify-between border-b border-slate-800 pb-6 mb-8 gap-4">
                   <div>
@@ -75,7 +78,7 @@ export default function App() {
                     </p>
                   </div>
                   
-                  {/* Bouton de déconnexion stylisé avec vos classes ou Tailwind */}
+                  {/* Bouton de déconnexion */}
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-slate-400">
                       Ravi de vous revoir, <strong className="text-slate-200">{authUser.fullName || "Utilisateur"}</strong>
@@ -103,22 +106,23 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Lecteur Audio Stylisé */}
+                  {/* Bouton de téléchargement rapide si un audio vient d'être généré */}
                   {audioUrl && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-cyan-950/20 border border-cyan-500/30 rounded-xl gap-4 shadow-lg animate-fade-in">
-                      <audio controls src={audioUrl} className="w-full sm:max-w-md accent-cyan-500" autoPlay />
+                    <div className="flex items-center justify-end animate-fade-in">
                       <a 
                         href={audioUrl} 
-                        download="speech.wav" 
-                        className="w-full sm:w-auto text-center px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-900 rounded-lg font-semibold text-sm transition-all shadow-md shadow-cyan-500/10"
+                        target="_blank"
+                        rel="noreferrer"
+                        download="speech.mp3" 
+                        className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-900 rounded-lg font-semibold text-sm transition-all shadow-md shadow-cyan-500/10 flex items-center gap-2"
                       >
-                        Télécharger le fichier audio
+                        Télécharger le dernier audio (.mp3)
                       </a>
                     </div>
                   )}
 
                   {/* Affichage de l'historique utilisateur */}
-                  <HistoryList history={history} isLoading={isLoadingHistory} />
+                  <TtsHistoryList history={history} isLoading={isLoadingHistory} />
                 </main>
               </div>
             ) : (
@@ -132,7 +136,10 @@ export default function App() {
         <Route path="/signup" element={!authUser ? <Signup /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* LECTEUR AUDIO GLOBAL FLOTTANT */}
+      {/* Il écoute l'état global Zustand. Dès que 'audioUrl' est rempli, il apparaît magiquement en bas de l'écran */}
+      <AudioPlayer />
     </div>
   );
 }
-

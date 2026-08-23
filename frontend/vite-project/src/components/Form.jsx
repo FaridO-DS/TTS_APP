@@ -3,7 +3,7 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
     <form onSubmit={onSubmit} className="w-full max-w-4xl mx-auto flex flex-col gap-6 p-6 bg-[#0f172a]/50 rounded-xl border border-slate-800 shadow-xl">
       
       {/* Zone de texte */}
-      <div class="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         <label htmlFor="text-input" className="text-sm font-medium text-slate-300">
           Texte à convertir en audio
         </label>
