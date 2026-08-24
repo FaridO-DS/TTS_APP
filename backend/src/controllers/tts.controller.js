@@ -1,18 +1,36 @@
 import axios from 'axios';
 import { ENV } from '../lib/env.js';
 import History from '../models/History.js'; 
-import cloudinary from '../lib/cloudinary.js'
+import cloudinary from '../lib/cloudinary.js';
+import User from '../models/User.js';
 
 export const tts = async (req, res) => {
     const { text, language } = req.body;
+    const userId = req.user._id;
 
     // 1. Validation des données d'entrée
     if (!text) {
-        return res.status(400).json({ success: false, message: 'Le texte est requis.' });
+        return res.status(400).json({ success: false, message: 'Text is required.' });
     }
 
     try {
-        // 2. Appel à FastAPI en demandant un flux binaire (arraybuffer)
+        // 1. Récupérer l'utilisateur à jour depuis la base de données
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // 2. 🔴 VÉRIFICATION DU COMPTEUR PERMANENT (Insensible aux suppressions d'historique)
+        if (user.generationsCount >= 3) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Free plan limit reached (3 generations). Upgrade to the Premium plan for unlimited access and custom voices !" 
+            });
+        
+        }
+
+        // 3. Appel à FastAPI en demandant un flux binaire (arraybuffer)
         const fastapiResponse = await axios.post(`${ENV.FASTAPI_URL}/tts`, 
             { 
                 text, 
@@ -26,7 +44,7 @@ export const tts = async (req, res) => {
         // Conversion des données reçues en Buffer Node.js
         const audioBuffer = Buffer.from(fastapiResponse.data);
 
-        // 3. Téléversement vers Cloudinary via un Stream
+        // 4. Téléversement vers Cloudinary via un Stream
         const uploadToCloudinary = (buffer) => {
             return new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
@@ -48,20 +66,23 @@ export const tts = async (req, res) => {
         const cloudinaryResult = await uploadToCloudinary(audioBuffer);
         const permanentAudioUrl = cloudinaryResult.secure_url; // L'URL HTTPS officielle hébergée
 
-        // 4. Sauvegarde dans MongoDB avec la vraie URL Cloudinary
+        // 5. Sauvegarde dans MongoDB avec la vraie URL Cloudinary
         const newHistoryItem = await History.create({
-            userId: req.user._id,
-            text: text,
+            userId,
+            text,
             language: language || 'default',
             audioUrl: permanentAudioUrl, // L'URL persistante est maintenant stockée ici !
             duration_seconds: cloudinaryResult.duration ? Math.round(cloudinaryResult.duration) : 0, 
         });
 
-        // 5. Réponse au format JSON pour le Frontend
+        // 6. Réponse au format JSON pour le Frontend
         // Puisque Cloudinary héberge l'audio, le frontend n'a plus besoin de recevoir un Blob binaire brut.
+        user.generationsCount +=1;
+        await user.save();
+        
         return res.status(200).json({
             success: true,
-            message: 'Audio généré et hébergé avec succès.',
+            message: 'Audio successfully generated and hosted.',
             audioUrl: permanentAudioUrl,
             historyItem: newHistoryItem
         });

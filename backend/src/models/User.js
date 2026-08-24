@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
     profilePicture: {
         type: String,
         default: ''
+    },
+    generationsCount: {
+        type: Number,
+        default:0
     }
     },
 {
