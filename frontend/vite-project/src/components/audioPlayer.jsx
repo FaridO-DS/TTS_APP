@@ -13,7 +13,7 @@ export default function AudioPlayer() {
       audioRef.current.load();
       audioRef.current.play()
         .then(() => setIsPlaying(true))
-        .catch((err) => console.log("Lecture auto bloquée :", err));
+        .catch((err) => console.log("Auto-play blocked :", err));
     } else {
       setIsPlaying(false);
     }
@@ -44,7 +44,8 @@ export default function AudioPlayer() {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-xl bg-slate-800/80 border border-slate-700/50 backdrop-blur-lg text-slate-100 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 z-50 animate-fade-in-up">
+    <div className="fixed bottom-6 left-0 right-0 mx-auto w-[calc(100%-2rem)] max-w-xl bg-slate-800/90 border border-slate-700/50 backdrop-blur-lg text-slate-100 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 z-50 animate-fade-in-up">
+
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -62,7 +63,7 @@ export default function AudioPlayer() {
 
       {/* Barre de Progression en harmonie avec le thème */}
       <div className="flex-1 flex flex-col gap-1">
-        <span className="text-xs text-slate-400 font-medium truncate tracking-wide">Lecture en cours...</span>
+        <span className="text-xs text-slate-400 font-medium truncate tracking-wide">Playing...</span>
         <input
           type="range"
           min="0"

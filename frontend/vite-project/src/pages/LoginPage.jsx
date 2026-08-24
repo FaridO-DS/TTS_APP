@@ -21,7 +21,7 @@ export default function LoginPage() {
         <div className="hidden md:w-1/2 md:flex flex-col items-center justify-center p-8 bg-slate-800/20 md:border-r border-slate-700/30">
           <div className="text-center max-w-sm">
             <div className="w-full h-48 bg-cyan-500/10 rounded-2xl flex items-center justify-center border border-cyan-500/20 mb-6">
-              <span className="text-cyan-400 font-semibold text-lg">VocalEase Space</span>
+              <span className="text-cyan-400 font-semibold text-lg">Speechy</span>
             </div>
             <h3 className="text-xl font-medium text-cyan-400">Welcome Back</h3>
             <p className="text-slate-400 text-sm mt-2">
@@ -51,7 +51,6 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="input"
-                    placeholder="johndoe@gmail.com"
                     required
                   />
                 </div>

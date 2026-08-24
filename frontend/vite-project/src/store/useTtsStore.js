@@ -19,78 +19,31 @@ export const useTtsStore = create((set, get) => ({
     }
 
     try {
-      // 1. Récupération du flux audio binaire (MPEG/MP3) depuis votre API TTS
-      const res = await axiosInstance.post(
-        "/api/tts", 
-        { text, language }, 
-        { responseType: "blob" } 
-      );
+      // 🟢 CORRECTION : On retire { responseType: "blob" } car le serveur renvoie du JSON maintenant !
+      const res = await axiosInstance.post("/api/tts", { text, language });
 
-      const audioBlob = res.data;
+      // L'API Express renvoie : { success: true, audioUrl: "...", message: "..." }
+      if (res.data && res.data.success) {
+        // On stocke directement l'URL Cloudinary persistante
+        set({ audioUrl: res.data.audioUrl });
+        toast.success("Voice generated successfully!");
 
-      // 2. Récupération des identifiants et de la signature Cloudinary depuis votre backend
-      // Créez cette route côté backend pour générer la signature
-      const cryptoRes = await axiosInstance.post("/api/cloudinary-signature");
-      const { signature, timestamp, apiKey, cloudName, folder } = cryptoRes.data;
-
-      // 3. Préparation du FormData pour Cloudinary
-      const formData = new FormData();
-      // On nomme le fichier avec l'extension .mp3 ou .mpeg
-      formData.append("file", audioBlob, "audio.mp3");
-      formData.append("api_key", apiKey);
-      formData.append("timestamp", timestamp);
-      formData.append("signature", signature);
-      formData.append("folder", folder || "audio_tts");
-
-      // 4. Envoi direct du fichier à l'API Cloudinary (sans passer par votre serveur)
-      const cloudinaryUrl = `https://cloudinary.com{cloudName}/video/upload`;
-      
-      // Utilisation d'un fetch standard ou axios sans les headers globaux de votre API si nécessaire
-      const cloudRes = await fetch(cloudinaryUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!cloudRes.ok) {
-        throw new Error("Erreur lors du téléversement vers Cloudinary");
-      }
-
-      const cloudData = await cloudRes.json();
-      const permanentAudioUrl = cloudData.secure_url; // L'URL https permanente de Cloudinary
-
-      // 5. [Optionnel mais recommandé] Enregistrer cette URL Cloudinary dans votre historique backend
-      // Permet de lier l'URL à l'utilisateur actuel en Base de Données
-      await axiosInstance.post("/api/tts/save-history", {
-        text,
-        language,
-        audioUrl: permanentAudioUrl
-      });
-
-      // 6. Mise à jour de l'état global avec l'URL Cloudinary
-      set({ audioUrl: permanentAudioUrl });
-      toast.success("Voice generated and saved successfully!");
-
-      // Rafraîchissement automatique de l'historique
-      await get().fetchHistory();
-    } catch (error) {
-      console.error("TTS Generation/Upload Error:", error);
-      
-      if (error.response?.data instanceof Blob) {
-        const textError = await error.response.data.text();
-        try {
-          const jsonError = JSON.parse(textError);
-          toast.error(jsonError.message || "Failed to generate voice.");
-        } catch {
-          toast.error("Failed to generate voice.");
-        }
+        // 🔄 L'historique se rafraîchit maintenant automatiquement sans encombre !
+        await get().fetchHistory();
       } else {
-        toast.error(error.message || "Failed to generate voice.");
+        throw new Error(res.data?.message || "Failed to generate voice.");
       }
+    } catch (error) {
+      console.error("TTS Generation Error:", error);
+      
+      // Gestion propre des erreurs au format JSON
+      const errorMessage = error.response?.data?.message || error.message || "Failed to generate voice.";
+      toast.error(errorMessage);
     } finally {
       set({ isGenerating: false });
     }
   },
-
+      
   // Action pour charger l'historique de l'utilisateur connecté
   fetchHistory: async () => {
     set({ isLoadingHistory: true });

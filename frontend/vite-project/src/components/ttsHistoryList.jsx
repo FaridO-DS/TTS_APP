@@ -31,38 +31,38 @@ export default function TtsHistoryList() {
 
   // Dictionnaire pour afficher les langues de façon lisible
   const languageNames = {
-    a: "Anglais (US)",
-    b: "Anglais (UK)",
-    e: "Espagnol",
-    f: "Français",
+    a: "English (US)",
+    b: "English (UK)",
+    e: "Spanish",
+    f: "French",
     h: "Hindi",
-    i: "Italien",
-    p: "Portugais",
+    i: "Italian",
+    p: "Portuguese",
   };
 
   if (isLoadingHistory) {
     return (
       <div className="flex justify-center items-center py-12 text-slate-500 gap-2">
         <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        Chargement de votre historique...
+        Loading your history...
       </div>
     );
   }
 
   if (history.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+      <div className="text-center py-12 text-slate-400 bg-slate border border-dashed border-slate-200 rounded-2xl">
         <Headphones className="mx-auto mb-3 text-slate-300" size={32} />
-        <p>Aucun audio généré pour le moment.</p>
+        <p>No audio generated yet.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4 max-w-4xl mx-auto px-4">
-      <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
-        <Clock size={22} className="text-indigo-600" />
-        Historique de vos générations
+      <h2 className="text-xl font-bold text-indigo-700 flex items-center gap-2 mb-6">
+        <Clock size={22} className="text-indigo-700" />
+        Generation history
       </h2>
 
       <div className="grid gap-3">
@@ -72,18 +72,18 @@ export default function TtsHistoryList() {
           return (
             <div 
               key={item._id}
-              className={`p-4 bg-white border rounded-xl shadow-sm transition flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md ${
+              className={`p-4 bg-slate-600 border rounded-xl shadow-sm transition flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md ${
                 isCurrentPlaying ? "border-indigo-500 bg-indigo-50/30" : "border-slate-100"
               }`}
             >
               {/* Infos Texte & Langue */}
               <div className="flex-1 min-w-0">
-                <p className="text-slate-700 font-medium text-sm md:text-base line-clamp-2 mb-2">
+                <p className="text-slate-300 font-medium text-sm md:text-base line-clamp-2 mb-2">
                   "{item.text}"
                 </p>
                 
                 {/* Métadonnées (Badges) */}
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
                   <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md text-slate-600 font-medium">
                     <Globe size={12} />
                     {languageNames[item.language] || item.language}
@@ -106,23 +106,23 @@ export default function TtsHistoryList() {
                   onClick={() => useTtsStore.setState({ audioUrl: item.audioUrl })}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${
                     isCurrentPlaying
-                      ? "bg-indigo-600 text-white shadow-indigo-200"
+                      ? "bg-indigo-700 text-white shadow-indigo-200"
                       : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
                   }`}
                 >
                   <Play size={16} fill={isCurrentPlaying ? "currentColor" : "none"} />
-                  {isCurrentPlaying ? "En écoute" : "Écouter"}
+                  {isCurrentPlaying ? "Listening..." : "Listen"}
                 </button>
 
                 {/* Bouton Supprimer (Poubelle) */}
                 <button
                   onClick={() => {
-                    if (confirm("Voulez-vous vraiment supprimer cet audio de l'historique et du Cloud ?")) {
+                    if (confirm("Do you really want to delete this audio from your history and the cloud?")) {
                       deleteHistoryItem(item._id);
                     }
                   }}
                   className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                  title="Supprimer définitivement"
+                  title="Permanently delete"
                 >
                   <Trash2 size={18} />
                 </button>

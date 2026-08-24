@@ -5,7 +5,7 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
       {/* Zone de texte */}
       <div className="flex flex-col gap-2">
         <label htmlFor="text-input" className="text-sm font-medium text-slate-300">
-          Texte à convertir en audio
+          Text to be converted to audio
         </label>
         <textarea
           id="text-input"
@@ -14,7 +14,7 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
           rows="4"
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Écrivez ici le texte à synthétiser..."
+          placeholder="Enter your text here..."
         />
       </div>
 
@@ -24,7 +24,7 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
         {/* Sélecteur de langue */}
         <div className="flex flex-col gap-2 w-full sm:w-64">
           <label htmlFor="language-select" className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Langue
+            Language
           </label>
           <select
             id="language-select"
@@ -32,13 +32,13 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
             value={language}
             onChange={(event) => setLanguage(event.target.value)}
           >
-            <option value="a">Anglais américain</option>
-            <option value="b">Britannique</option>
-            <option value="e">Espagnol</option>
-            <option value="f">Français</option>
+            <option value="a">American English</option>
+            <option value="b">British</option>
+            <option value="e">Spanish</option>
+            <option value="f">French</option>
             <option value="h">Hindi</option>
-            <option value="i">Italien</option>
-            <option value="p">Portugais brésilien</option>
+            <option value="i">Italian</option>
+            <option value="p">Brazilian Portuguese</option>
           </select>
         </div>
 
@@ -53,7 +53,7 @@ export default function Form({ text, setText, language, setLanguage, onSubmit, i
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
               <span>Conversion...</span>
             </div>
-          ) : 'Convertir en audio'}
+          ) : 'Convert to audio'}
         </button>
       </div>
 

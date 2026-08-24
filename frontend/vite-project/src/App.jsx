@@ -74,20 +74,20 @@ export default function App() {
                       Speechy
                     </h1>
                     <p className="text-slate-400 text-sm mt-1">
-                      Saisissez un texte et générez immédiatement un audio vocal.
+                      Enter text and instantly generate audio.
                     </p>
                   </div>
                   
                   {/* Bouton de déconnexion */}
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-slate-400">
-                      Ravi de vous revoir, <strong className="text-slate-200">{authUser.fullName || "Utilisateur"}</strong>
+                      Happy to see you again !, <strong className="text-slate-200">{authUser.fullName || "Utilisateur"}</strong>
                     </span>
                     <button 
                       onClick={logout}
                       className="px-4 py-1.5 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-300 rounded-lg text-sm font-medium border border-slate-700/50 transition-colors"
                     >
-                      Déconnexion
+                      Log out
                     </button>
                   </div>
                 </header>
@@ -116,7 +116,7 @@ export default function App() {
                         download="speech.mp3" 
                         className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-900 rounded-lg font-semibold text-sm transition-all shadow-md shadow-cyan-500/10 flex items-center gap-2"
                       >
-                        Télécharger le dernier audio (.mp3)
+                        Download last audio (.mp3)
                       </a>
                     </div>
                   )}
