@@ -10,8 +10,10 @@ output.wav
 test_kokoro.py
 backend/.env
 .vscode
+audio_store
 # Virtual environments
 .venv
 .env
+
 
 
