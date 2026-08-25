@@ -9,7 +9,7 @@ import Form from "./components/Form";
 import TtsHistoryList from "./components/ttsHistoryList"; 
 import Login from "./pages/LoginPage"; 
 import Signup from "./pages/SignupPage"; 
-import AudioPlayer from "./components/audioPlayer"; // 👈 Votre nouveau lecteur stylisé
+import AudioPlayer from "./components/audioPlayer"; 
 import "./index.css";
 
 export default function App() {
@@ -65,7 +65,7 @@ export default function App() {
           element={
             authUser ? (
               <div className="w-full max-w-5xl mx-auto px-4 py-8 flex flex-col flex-grow mb-24"> 
-                {/* 💡 Note : Ajout d'une marge basse 'mb-24' pour que la barre de lecture flottante ne cache pas le bas de l'historique */}
+                {/*  Ajout d'une marge basse 'mb-24' pour que la barre de lecture flottante ne cache pas le bas de l'historique */}
                 
                 {/* BARRE DE NAVIGATION / EN-TÊTE ACCUEIL */}
                 <header className="flex flex-col sm:flex-row items-center justify-between border-b border-slate-800 pb-6 mb-8 gap-4">
