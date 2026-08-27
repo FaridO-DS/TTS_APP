@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # --- SERVICE PYTHON (FASTAPI) ---
+  fastapi:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: speechy-fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./fastapi/.env
+    volumes:
+      - hf_cache:/root/.cache/huggingface # 🔴 Liaison du volume pour stocker Kokoro de manière permanente
+
+  # --- SERVICE NODE (EXPRESS) ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: speechy-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env # Charge votre fichier .env local (clés Cloudinary, MongoDB, etc.)
+    depends_on:
+      - fastapi
+
+# 🔴 DÉCLARATION DU VOLUME PERSISTANT
+volumes:
+  hf_cache:
+    name: speechy_hf_cache
