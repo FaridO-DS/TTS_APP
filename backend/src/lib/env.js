@@ -15,10 +15,10 @@ export const ENV = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   // Valeur de repli locale pour éviter les bugs de redirection d'authentification CORS
-  CLIENT_URL: process.env.CLIENT_URL || 'https://www.speechy.f-oudghiri.dev',
+  CLIENT_URL: process.env.CLIENT_URL || 'https://speechy.f-oudghiri.dev',
   ARCJET_KEY: process.env.ARCJET_KEY,
   ARCJET_ENV: process.env.ARCJET_ENV || process.env.NODE_ENV || 'production',
-  FASTAPI_URL : process.env.FASTAPI_URL || 'http://localhost:8000',
+  FASTAPI_URL : process.env.FASTAPI_URL || 'http://fastapi:8000',
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
