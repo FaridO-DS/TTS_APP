@@ -1,7 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react'; // ou plugin-react-swc
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-})
+  // 🟢 AJOUTEZ CE BLOC DE CONFIGURATION BUILD :
+  build: {
+    cssMinify: false // Force Vite à utiliser un minificateur CSS plus tolérant
+  }
+});
+

@@ -1,5 +1,5 @@
+# Serveur de production Node.js
 FROM node:22-alpine
-
 WORKDIR /app
 
 # 🔴 AJOUT : Met à jour les paquets système d'Alpine pour éliminer les failles connues
@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "src/server.js"]

@@ -10,7 +10,7 @@ import { ENV } from './lib/env.js';
 import { connectDB } from './lib/db.js';
 
 const __dirname = path.resolve();
-const app = express()
+const app = express();
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json({ limit: "4mb" })); // req.body
@@ -22,9 +22,15 @@ app.use('/api/tts', ttsRoutes)
 
 // Make ready for deployment
 if (ENV.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
+    const disPath = path.join(process.cwd(),"dist");
+    app.use(express.static(disPath));
     app.get("*", (_, res) => {
-        res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+        res.sendFile(path.join(disPath, "index.html"), (err) => {
+	  if (err) {
+		console.error("Critical error when sending index.html :", err);
+		res.status(500).send("Check dist directory location.");
+   	  }
+	});
     });
 }
 
