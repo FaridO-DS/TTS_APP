@@ -109,17 +109,42 @@ export default function App() {
                   {/* Bouton de téléchargement rapide si un audio vient d'être généré */}
                   {audioUrl && (
                     <div className="flex items-center justify-end animate-fade-in">
-                      <a 
-                        href={audioUrl} 
-                        target="_blank"
-                        rel="noreferrer"
-                        download="speech.mp3" 
+                      <button 
+                        onClick={async () => {
+                          try {
+                            // 1. On récupère le fichier depuis Cloudinary sous forme de Blob binaire
+                            const response = await fetch(audioUrl);
+                            const blob = await response.blob();
+          
+                            // 2. On crée une URL locale temporaire pointant sur ce Blob
+                            const localUrl = window.URL.createObjectURL(blob);
+          
+                            // 3. On crée un lien HTML invisible pour déclencher le téléchargement
+                            const link = document.createElement('a');
+                            link.href = localUrl;
+                            link.download = `speech-${Date.now()}.mp3`; // Nom du fichier final
+          
+                            // 4. On simule le clic puis on nettoie la mémoire
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(localUrl);
+                          } catch (error) {
+                            console.error("Erreur lors du téléchargement de l'audio:", error);
+                            // Fallback : si le fetch échoue (CORS), on ouvre dans un nouvel onglet
+                            window.open(audioUrl, '_blank');
+                          }
+                        }}
                         className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-900 rounded-lg font-semibold text-sm transition-all shadow-md shadow-cyan-500/10 flex items-center gap-2"
                       >
+                        <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
                         Download last audio (.mp3)
-                      </a>
+                      </button>
                     </div>
-                  )}
+                    )
+                  }
 
                   {/* Affichage de l'historique utilisateur */}
                   <TtsHistoryList history={history} isLoading={isLoadingHistory} />
