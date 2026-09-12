@@ -13,5 +13,6 @@ fastapi/.env
 .env
 # others
 deploy.sh
-
+backend/.DS_Store
+frontend/.DS_Store
 
